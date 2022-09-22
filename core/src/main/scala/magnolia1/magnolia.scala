@@ -11,6 +11,16 @@ import scala.reflect.macros._
 object Magnolia {
   import CompileTimeState._
 
+  trait Config {
+    type Proxy
+    type Ignore
+    def minParameters: Int = 0
+    def maxParameters: Int = Int.MaxValue
+    def minSubtypes: Int = 0
+    def maxSubtypes: Int = Int.MaxValue
+    def readOnly: Boolean = false
+  }
+
   /** derives a generic typeclass instance for the type `T`
     *
     * This is a macro definition method which should be bound to a method defined inside a Magnolia generic derivation object, that is, one
@@ -42,7 +52,16 @@ object Magnolia {
     * split[T](sealedTrait: SealedTrait[Typeclass, T]): Typeclass[T] = ... </pre> will suffice, however the qualifications regarding
     * additional type parameters and implicit parameters apply equally to `split` as to `join`.
     */
-  def gen[T: c.WeakTypeTag](c: whitebox.Context): c.Tree = Stack.withContext(c) { (stack, depth) =>
+  def gen[T: c.WeakTypeTag](c: whitebox.Context): c.Tree =
+    derive[T](c, new Config {})
+
+  def genWith[T: c.WeakTypeTag, C <: Config with Singleton: c.WeakTypeTag](c: whitebox.Context): c.Tree = {
+    import c.universe._
+    println(weakTypeOf[C].typeSymbol.isModuleClass)
+    derive[T](c, c.eval(c.Expr[Config](internal.gen.mkAttributedRef(weakTypeOf[C].termSymbol))))
+  }
+
+  private def derive[T: c.WeakTypeTag](c: whitebox.Context, config: Config): c.Tree = Stack.withContext(c) { (stack, depth) =>
     import c.internal._
     import c.universe._
     import definitions._

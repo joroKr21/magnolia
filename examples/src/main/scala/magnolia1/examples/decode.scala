@@ -7,6 +7,8 @@ import scala.language.experimental.macros
 /** very basic decoder for converting strings to other types */
 trait Decoder[T] { def decode(str: String): T }
 
+object Config extends Magnolia.Config
+
 /** derivation object (and companion object) for [[Decoder]] instances */
 object Decoder {
 
@@ -17,7 +19,7 @@ object Decoder {
   implicit val int: Decoder[Int] = _.toInt
 
   /** binds the Magnolia macro to this derivation object */
-  implicit def gen[T]: Decoder[T] = macro Magnolia.gen[T]
+  implicit def gen[T]: Decoder[T] = macro Magnolia.genWith[T, Config.type]
 
   /** type constructor for new instances of the typeclass */
   type Typeclass[T] = Decoder[T]

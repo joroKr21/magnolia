@@ -683,8 +683,6 @@ final case class TypeName(owner: String, short: String, typeArguments: Seq[TypeN
   */
 final class debug(typeNamePart: String = "") extends scala.annotation.StaticAnnotation
 
-private[magnolia1] final case class EarlyExit[E](e: E) extends Exception with util.control.NoStackTrace
-
 object MagnoliaUtil {
 
   final def checkParamLengths(fieldValues: Seq[Any], paramsLength: Int, typeName: String): Unit =
